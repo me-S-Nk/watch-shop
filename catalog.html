@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Каталог часов — MEGA LUX</title>
+  <meta name="description" content="Весь каталог премиальных швейцарских часов: Rolex, Patek Philippe, Hublot, Omega. Фильтрация по бренду, цене, стилю."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/shell.js"></script>
+</head>
+<body>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="container page-hero-inner">
+    <nav class="page-breadcrumb" aria-label="Хлебные крошки">
+      <a href="index.html">Главная</a>
+      <span>/</span>
+      <span style="color:var(--white);">Коллекции</span>
+    </nav>
+    <h1 class="page-title">Коллекция часов</h1>
+    <p class="page-subtitle">Эксклюзивный выбор сертифицированных швейцарских хронографов</p>
+  </div>
+</div>
+
+<!-- CATALOG LAYOUT -->
+<div class="catalog-layout">
+  <div class="container">
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-search">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" id="searchInput" placeholder="Поиск по бренду или модели…" oninput="applyFilters()"/>
+      </div>
+      <div class="filter-controls">
+        <select class="filter-select" id="brandFilter" onchange="applyFilters()">
+          <option value="">Все бренды</option>
+        </select>
+        <select class="filter-select" id="categoryFilter" onchange="applyFilters()">
+          <option value="">Все категории</option>
+          <option value="sport">Спортивные</option>
+          <option value="dress">Классические</option>
+        </select>
+        <select class="filter-select" id="priceFilter" onchange="applyFilters()">
+          <option value="">Любая цена</option>
+          <option value="0-2000000">до 2 000 000 ₽</option>
+          <option value="2000000-6000000">2 — 6 млн ₽</option>
+          <option value="6000000-999999999">от 6 млн ₽</option>
+        </select>
+        <select class="filter-select" id="sortFilter" onchange="applyFilters()">
+          <option value="default">Сортировка</option>
+          <option value="price-asc">Цена: по возрастанию</option>
+          <option value="price-desc">Цена: по убыванию</option>
+          <option value="rating">По рейтингу</option>
+          <option value="name">По названию</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- BADGE CHIPS -->
+    <div class="filter-chips" id="filterChips" style="margin-bottom:24px;">
+      <button class="filter-chip active" data-badge="" onclick="setBadgeFilter(this,'')">Все</button>
+      <button class="filter-chip" data-badge="new"       onclick="setBadgeFilter(this,'new')">Новинки</button>
+      <button class="filter-chip" data-badge="sale"      onclick="setBadgeFilter(this,'sale')">Скидки</button>
+      <button class="filter-chip" data-badge="limited"   onclick="setBadgeFilter(this,'limited')">Лимитированные</button>
+      <button class="filter-chip" data-badge="exclusive" onclick="setBadgeFilter(this,'exclusive')">Эксклюзивные</button>
+    </div>
+
+    <!-- SORT/VIEW BAR -->
+    <div class="sort-view-bar">
+      <div class="results-count" id="resultsCount">Загрузка…</div>
+      <div class="view-controls">
+        <button class="view-btn active" id="gridViewBtn" onclick="setView('grid')" aria-label="Сетка">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="view-btn" id="listViewBtn" onclick="setView('list')" aria-label="Список">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- PRODUCTS GRID -->
+    <div class="products-grid" id="catalogGrid"></div>
+
+    <!-- NO RESULTS -->
+    <div id="noResults" style="display:none;text-align:center;padding:80px 0;">
+      <svg style="width:64px;height:64px;color:var(--dark-5);margin:0 auto 20px;display:block;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <p style="color:var(--gray-3);font-size:1rem;margin-bottom:8px;">Ничего не найдено</p>
+      <p style="color:var(--gray-2);font-size:0.85rem;">Попробуйте изменить параметры фильтра</p>
+      <button class="btn-primary" style="margin-top:24px;" onclick="resetFilters()">Сбросить фильтры</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CATALOG STATE ─────────────────────────────────────────────────────
+let currentView = 'grid';
+let activeBadgeFilter = '';
+
+// ── INIT ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Populate brand filter
+  const bf = document.getElementById('brandFilter');
+  BRANDS.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b; opt.textContent = b;
+    bf.appendChild(opt);
+  });
+
+  // Read URL params and pre-fill filters
+  const params = new URLSearchParams(window.location.search);
+  const q    = params.get('q');
+  const brand = params.get('brand');
+  const cat   = params.get('category');
+  const badge = params.get('badge');
+  const minP  = params.get('minprice');
+  const maxP  = params.get('maxprice');
+
+  if (q)     { document.getElementById('searchInput').value = q; }
+  if (brand) { document.getElementById('brandFilter').value = brand; }
+  if (cat)   { document.getElementById('categoryFilter').value = cat; }
+  if (badge) {
+    activeBadgeFilter = badge;
+    document.querySelectorAll('.filter-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.badge === badge);
+    });
+  }
+  if (minP || maxP) {
+    const min = parseInt(minP || 0);
+    const max = parseInt(maxP || 999999999);
+    // Select price range option
+    const pf = document.getElementById('priceFilter');
+    if (min === 0 && max <= 2000000) pf.value = '0-2000000';
+    else if (min >= 2000000 && max <= 6000000) pf.value = '2000000-6000000';
+    else if (min >= 6000000) pf.value = '6000000-999999999';
+  }
+
+  renderCatalog();
+
+  // Announcement bar scroll hide
+  window.addEventListener('scroll', () => {
+    const bar = document.getElementById('announcementBar');
+    if (bar) bar.classList.toggle('hidden-bar', window.scrollY > 40);
+  }, { passive: true });
+});
+
+// ── RENDER CATALOG ────────────────────────────────────────────────────
+function renderCatalog() {
+  const grid      = document.getElementById('catalogGrid');
+  const noResults = document.getElementById('noResults');
+  const countEl   = document.getElementById('resultsCount');
+
+  const q       = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+  const brand   = document.getElementById('brandFilter')?.value || '';
+  const cat     = document.getElementById('categoryFilter')?.value || '';
+  const sort    = document.getElementById('sortFilter')?.value || 'default';
+  const priceRaw = document.getElementById('priceFilter')?.value || '';
+
+  let minPrice = 0, maxPrice = Infinity;
+  if (priceRaw) {
+    const [mn, mx] = priceRaw.split('-').map(Number);
+    minPrice = mn; maxPrice = mx;
+    // Convert to product price (product prices are in USD, displayed *88)
+    minPrice = minPrice / 88;
+    maxPrice = maxPrice / 88;
+  }
+
+  let filtered = PRODUCTS.filter(p => {
+    const matchQ     = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.model.toLowerCase().includes(q);
+    const matchBrand = !brand || p.brand === brand;
+    const matchCat   = !cat   || p.category === cat;
+    const matchBadge = !activeBadgeFilter || (p.badges || []).includes(activeBadgeFilter);
+    const matchPrice = p.price >= minPrice && p.price <= maxPrice;
+    return matchQ && matchBrand && matchCat && matchBadge && matchPrice;
+  });
+
+  if (sort === 'price-asc')  filtered.sort((a,b) => a.price - b.price);
+  if (sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
+  if (sort === 'rating')     filtered.sort((a,b) => b.rating - a.rating || b.reviews - a.reviews);
+  if (sort === 'name')       filtered.sort((a,b) => a.name.localeCompare(b.name, 'ru'));
+
+  if (countEl) countEl.innerHTML = `Показано <strong>${filtered.length}</strong> из <strong>${PRODUCTS.length}</strong> товаров`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    noResults.style.display = 'block';
+  } else {
+    noResults.style.display = 'none';
+    grid.innerHTML = filtered.map(p => createProductCard(p)).join('');
+    if (currentView === 'list') grid.classList.add('list-view');
+  }
+}
+
+function applyFilters() { renderCatalog(); }
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('brandFilter').value = '';
+  document.getElementById('categoryFilter').value = '';
+  document.getElementById('priceFilter').value = '';
+  document.getElementById('sortFilter').value = 'default';
+  activeBadgeFilter = '';
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  document.querySelector('.filter-chip[data-badge=""]')?.classList.add('active');
+  renderCatalog();
+}
+
+function setBadgeFilter(el, badge) {
+  activeBadgeFilter = badge;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderCatalog();
+}
+
+function setView(v) {
+  currentView = v;
+  const grid = document.getElementById('catalogGrid');
+  document.getElementById('gridViewBtn')?.classList.toggle('active', v === 'grid');
+  document.getElementById('listViewBtn')?.classList.toggle('active', v === 'list');
+  grid?.classList.toggle('list-view', v === 'list');
+}
+</script>
+</body>
+</html>

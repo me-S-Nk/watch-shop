@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title id="pageTitle">Часы — MEGA LUX</title>
+  <meta name="description" id="pageDesc" content="Подробное описание премиальных швейцарских часов в MEGA LUX."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/shell.js"></script>
+</head>
+<body>
+
+<!-- Product is rendered dynamically below -->
+<div id="productPage" style="background:var(--dark-1);min-height:100vh;"></div>
+
+<!-- Related Products -->
+<section class="products-section" id="relatedSection" style="display:none;">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Также смотрят</div>
+      <h2 class="section-title">Похожие Модели</h2>
+    </div>
+    <div class="products-grid" id="relatedGrid"></div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = parseInt(params.get('id'));
+  const product = PRODUCTS.find(p => p.id === id);
+  const page = document.getElementById('productPage');
+
+  if (!product) {
+    page.innerHTML = `
+      <div class="container" style="padding:120px 0;text-align:center;">
+        <div style="font-size:4rem;margin-bottom:20px;">⌚</div>
+        <h1 style="font-family:var(--font-display);font-size:2rem;color:var(--white);margin-bottom:12px;">Товар не найден</h1>
+        <p style="color:var(--gray-3);margin-bottom:32px;">Возможно, он был удалён или ссылка устарела</p>
+        <a href="catalog.html" class="btn-primary">Перейти в каталог</a>
+      </div>`;
+    return;
+  }
+
+  // Update page meta
+  document.getElementById('pageTitle').textContent = `${product.brand} ${product.name} — MEGA LUX`;
+  document.getElementById('pageDesc').content = product.description.substring(0, 150);
+
+  const isWished = wishlist.includes(product.id);
+  const stars = Array.from({length:5}, (_,i) =>
+    `<svg class="star ${i < product.rating ? '' : 'empty'}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+  ).join('');
+
+  const specsHtml = Object.entries(product.specs || {}).map(([k,v]) =>
+    `<div class="detail-spec-row"><span class="detail-spec-label">${k}</span><span class="detail-spec-value">${v}</span></div>`
+  ).join('');
+
+  const badgesHtml = (product.badges || []).map(b => {
+    const labels = { new:'Новинка', sale:'Скидка', exclusive:'Эксклюзив', limited:'Лимитировано' };
+    return `<span class="badge-tag badge-${b}" style="margin-right:6px;">${labels[b]||b}</span>`;
+  }).join('');
+
+  const savePct = product.oldPrice ? Math.round((1 - product.price/product.oldPrice)*100) : 0;
+
+  page.innerHTML = `
+    <div style="padding-top:calc(var(--announce-height) + var(--nav-height));">
+      <div class="container" style="padding-top:24px;padding-bottom:12px;">
+        <nav class="page-breadcrumb" aria-label="Хлебные крошки">
+          <a href="index.html">Главная</a><span>/</span>
+          <a href="catalog.html">Коллекции</a><span>/</span>
+          <a href="catalog.html?brand=${encodeURIComponent(product.brand)}">${product.brand}</a><span>/</span>
+          <span style="color:var(--white);">${product.name}</span>
+        </nav>
+      </div>
+      <div class="container">
+        <div class="product-detail">
+          <!-- Gallery -->
+          <div class="product-gallery">
+            <div class="product-gallery-main" id="mainImgWrap">
+              <img id="mainImg" src="${product.image}" alt="${product.brand} ${product.name}"
+                onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 400%22><rect fill=%22%23181818%22 width=%22400%22 height=%22400%22/><text x=%22200%22 y=%22200%22 fill=%22%23444%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2260%22>⌚</text></svg>'"/>
+            </div>
+            <div class="product-gallery-thumbs" id="thumbsWrap">
+              <div class="gallery-thumb active" onclick="switchImg('${product.image}', this)">
+                <img src="${product.image}" alt="Вид 1" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23222%22 width=%22100%22 height=%22100%22/></svg>'"/>
+              </div>
+              <div class="gallery-thumb" onclick="switchImg('${product.image}', this)" style="filter:hue-rotate(15deg) brightness(0.9);">
+                <img src="${product.image}" alt="Вид 2" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23222%22 width=%22100%22 height=%22100%22/></svg>'"/>
+              </div>
+              <div class="gallery-thumb" onclick="switchImg('${product.image}', this)" style="filter:contrast(0.85) brightness(1.05);">
+                <img src="${product.image}" alt="Вид 3" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23222%22 width=%22100%22 height=%22100%22/></svg>'"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="product-detail-info">
+            <div style="margin-bottom:12px;">${badgesHtml}</div>
+            <div class="detail-brand">${product.brand}</div>
+            <h1 class="detail-name">${product.name}</h1>
+            <div class="detail-ref">Артикул: ${product.model}</div>
+            <div class="detail-rating">
+              <div class="stars">${stars}</div>
+              <span class="rating-count" style="font-size:0.82rem;color:var(--gray-3);">${product.reviews} отзывов</span>
+            </div>
+
+            <div class="detail-price-block">
+              <div>
+                <span class="detail-price">${formatPrice(product.price)}</span>
+                ${product.oldPrice ? `<span class="detail-price-old">${formatPrice(product.oldPrice)}</span>` : ''}
+              </div>
+              ${product.oldPrice ? `<span class="detail-price-save">Экономия ${savePct}% — ${formatPrice(product.oldPrice - product.price)}</span>` : ''}
+            </div>
+
+            <div class="detail-stock-badge ${product.inStock ? '' : 'out'}">
+              ${product.inStock ? 'В наличии' : 'Нет в наличии'}
+            </div>
+
+            <div class="detail-actions">
+              ${product.inStock
+                ? `<button class="btn-detail-cart" onclick="addToCart(${product.id}, event)">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                     Добавить в корзину
+                   </button>`
+                : `<button class="btn-detail-cart" disabled style="opacity:0.45;cursor:not-allowed;">Нет в наличии</button>`
+              }
+              <button class="btn-detail-wish wish-btn ${isWished ? 'wishlisted' : ''}" data-id="${product.id}"
+                onclick="toggleWishlistItem(${product.id}, event)" aria-label="Избранное">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="${isWished ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </button>
+            </div>
+
+            <p class="detail-desc">${product.description}</p>
+
+            <div class="detail-specs">
+              <div class="detail-specs-title">Технические характеристики</div>
+              ${specsHtml}
+            </div>
+
+            <div class="detail-guarantee">
+              <div class="guarantee-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <div><div class="guarantee-label">Гарантия подлинности</div><div class="guarantee-sub">Сертификат мануфактуры</div></div>
+              </div>
+              <div class="guarantee-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <div><div class="guarantee-label">Возврат 30 дней</div><div class="guarantee-sub">Полный возврат средств</div></div>
+              </div>
+              <div class="guarantee-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                <div><div class="guarantee-label">Доставка с охраной</div><div class="guarantee-sub">Бронированный кейс</div></div>
+              </div>
+              <div class="guarantee-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <div><div class="guarantee-label">Поддержка 24/7</div><div class="guarantee-sub">Персональный консьерж</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Related products (same brand or category, excluding current)
+  const related = PRODUCTS.filter(p => p.id !== product.id && (p.brand === product.brand || p.category === product.category)).slice(0, 4);
+  if (related.length > 0) {
+    document.getElementById('relatedSection').style.display = '';
+    document.getElementById('relatedGrid').innerHTML = related.map(p => createProductCard(p, 'reveal')).join('');
+  }
+
+  // Announcement bar scroll hide
+  window.addEventListener('scroll', () => {
+    const bar = document.getElementById('announcementBar');
+    if (bar) bar.classList.toggle('hidden-bar', window.scrollY > 40);
+  }, { passive: true });
+});
+
+function switchImg(src, thumbEl) {
+  const main = document.getElementById('mainImg');
+  if (main) { main.style.opacity = '0'; setTimeout(() => { main.src = src; main.style.opacity = '1'; }, 200); }
+  document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+  thumbEl?.classList.add('active');
+}
+</script>
+
+<style>
+#mainImg { transition: opacity 0.2s ease; }
+</style>
+</body>
+</html>
